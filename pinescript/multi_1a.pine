@@ -1,0 +1,76 @@
+//@version=5
+indicator("Multi Indicator Setup", overlay=true)
+
+// === EMAs ===
+ema50 = ta.ema(close, 50)
+ema200 = ta.ema(close, 200)
+plot(ema50, "EMA 50", color=color.blue, linewidth=2)
+plot(ema200, "EMA 200", color=color.red, linewidth=2)
+
+// === MACD (12,26,9) ===
+[macdLine, signalLine, histLine] = ta.macd(close, 12, 26, 9)
+plot(macdLine, "MACD Line", color=color.blue, linewidth=1, display=display.none)
+plot(signalLine, "Signal Line", color=color.red, linewidth=1, display=display.none)
+plot(histLine, "Histogram", color=histLine >= 0 ? color.green : color.red, style=plot.style_histogram, display=display.none)
+
+// === ADX (14) ===
+adxLength = 14
+adxThreshold = 25
+[diplus, diminus, adx] = ta.dmi(14, 14)
+plot(adx, "ADX", color=color.purple, linewidth=1, display=display.none)
+
+// === RSI (14) ===
+rsiValue = ta.rsi(close, 14)
+plot(rsiValue, "RSI", color=color.orange, linewidth=1, display=display.none)
+
+// === Fibonacci Retracements ===
+// Get the highest high and lowest low of the last 50 bars
+highest = ta.highest(high, 50)
+lowest = ta.lowest(low, 50)
+
+// Calculate Fibonacci levels
+fib382 = highest - (highest - lowest) * 0.382
+fib500 = highest - (highest - lowest) * 0.5
+fib618 = highest - (highest - lowest) * 0.618
+
+// Plot Fibonacci levels
+plot(fib382, "Fib 38.2%", color=color.purple, linewidth=1, style=plot.style_dashed)
+plot(fib500, "Fib 50.0%", color=color.blue, linewidth=1, style=plot.style_dashed)
+plot(fib618, "Fib 61.8%", color=color.green, linewidth=1, style=plot.style_dashed)
+
+// === Bollinger Bands (20,2) ===
+bbLength = 20
+bbMult = 2.0
+[bbMiddle, bbUpper, bbLower] = ta.bb(close, bbLength, bbMult)
+plot(bbMiddle, "BB Middle", color=color.blue, linewidth=1)
+plot(bbUpper, "BB Upper", color=color.green, linewidth=1)
+plot(bbLower, "BB Lower", color=color.red, linewidth=1)
+
+// === ATR (14) ===
+atrValue = ta.atr(14)
+plot(atrValue, "ATR", color=color.gray, linewidth=1, display=display.none)
+
+// === Ichimoku Cloud ===
+conversionPeriods = 9
+basePeriods = 26
+laggingSpan2Periods = 52
+displacement = 26
+
+donchian(len) => math.avg(ta.highest(high, len), ta.lowest(low, len))
+
+conversionLine = donchian(conversionPeriods)
+baseLine = donchian(basePeriods)
+leadLine1 = math.avg(conversionLine, baseLine)
+leadLine2 = donchian(laggingSpan2Periods)
+
+plot(conversionLine, "Conversion Line", color=color.blue, linewidth=1)
+plot(baseLine, "Base Line", color=color.red, linewidth=1)
+plot(close, "Lagging Span", offset = -displacement, color=color.green, linewidth=1)
+leadLine1Plot = plot(leadLine1, "Lead 1", offset = displacement, color=color.green, linewidth=1)
+leadLine2Plot = plot(leadLine2, "Lead 2", offset = displacement, color=color.red, linewidth=1)
+fill(leadLine1Plot, leadLine2Plot, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
+
+// === On-Balance Volume (OBV) ===
+obv = ta.obv
+obvValue = obv
+plot(obvValue, "OBV", color=color.purple, linewidth=1, display=display.none)
