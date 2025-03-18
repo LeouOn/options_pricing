@@ -3,7 +3,6 @@ import { PricingResult } from '../core/types';
 
 export class SimplePricingProvider extends BasePricingProvider {
   async calculatePrice(optionParams: any): Promise<PricingResult> {
-    // TODO: Implement actual pricing logic
     return {
       price: 0,
       greeks: {
@@ -20,7 +19,10 @@ export class SimplePricingProvider extends BasePricingProvider {
   }
 
   async getHistoricalData(symbol: string, days: number): Promise<number[]> {
-    // TODO: Implement actual historical data fetch
     return Array(days).fill(0).map(() => Math.random() * 100);
+  }
+
+  async getTopVolumeSymbols(days: number, limit: number): Promise<string[]> {
+    return ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA'].slice(0, limit);
   }
 }

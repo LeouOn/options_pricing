@@ -11,6 +11,7 @@ export interface PricingProvider {
   readonly name: string;
   calculatePrice(optionParams: OptionParameters): Promise<PricingResult>;
   getHistoricalData(symbol: string, days: number): Promise<number[]>;
+  getTopVolumeSymbols(days: number, limit: number): Promise<string[]>;
 }
 
 export interface ApiConfig {
@@ -33,7 +34,6 @@ export class PricingError extends Error {
 }
 
 export abstract class BasePricingProvider implements PricingProvider {
-  // Add concrete implementation class
   static create(config: ApiConfig, name: string): PricingProvider {
     return new SimplePricingProvider(config, name);
   }
@@ -55,6 +55,7 @@ export abstract class BasePricingProvider implements PricingProvider {
 
   abstract calculatePrice(optionParams: OptionParameters): Promise<PricingResult>;
   abstract getHistoricalData(symbol: string, days: number): Promise<number[]>;
+  abstract getTopVolumeSymbols(days: number, limit: number): Promise<string[]>;
 
   protected async httpGet<T>(endpoint: string, params?: object): Promise<T> {
     try {
