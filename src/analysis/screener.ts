@@ -6,15 +6,20 @@ export class OpportunityFinder {
   private targetDeltaRange: [number, number];
 
   constructor(
-    volatilityThreshold = 0.3,
-    minDaysToExpiry = 14,
-    targetDeltaRange: [number, number] = [0.3, 0.7]
+    volatilityThreshold: number,
+    minDaysToExpiry: number,
+    targetDeltaRange: [number, number]
   ) {
     this.volatilityThreshold = volatilityThreshold;
     this.minDaysToExpiry = minDaysToExpiry;
     this.targetDeltaRange = targetDeltaRange;
   }
 
+  /**
+   * Finds options that are good for premium selling.
+   * @param options - The list of pricing results to filter.
+   * @returns A list of options meeting the criteria.
+   */
   findPremiumOpportunities(options: PricingResult[]): PricingResult[] {
     return options.filter(option => 
       option.modelUsed === 'black-scholes' &&
@@ -25,6 +30,11 @@ export class OpportunityFinder {
     );
   }
 
+  /**
+   * Finds options suitable for hedging strategies.
+   * @param options - The list of pricing results to filter.
+   * @returns A list of options meeting the criteria.
+   */
   findHedgeOpportunities(options: PricingResult[]): PricingResult[] {
     return options.filter(option =>
       option.greeks.gamma > 0.1 &&

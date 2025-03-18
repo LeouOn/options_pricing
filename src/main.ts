@@ -19,31 +19,44 @@ async function main() {
 
     const days = 1;
     const limit = 10;
-    const symbols = await providers[0].getTopVolumeSymbols(days, limit);
-    console.log(`Top ${limit} symbols in the past ${days} day(s):`, symbols);
-
-    const opportunityFinder = new OpportunityFinder();
+    const optionParamsConfig = config.optionParameters;
     const options: PricingResult[] = [];
+    const opportunityFinder = new OpportunityFinder(
+      config.opportunityFinder.volatilityThreshold,
+      config.opportunityFinder.minDaysToExpiry,
+      config.opportunityFinder.targetDeltaRange
+    );
 
-    for (const symbol of symbols) {
-      const underlyingPrice = 100;
-      const strikePrices = [90, 100, 110];
-      const expirations = [0.5, 1];
+    for (const provider of providers) {
+      try {
+        const symbols = await provider.getTopVolumeSymbols(days, limit);
+        console.log(`Top ${limit} symbols from ${provider.name} in the past ${days} day(s):`, symbols);
 
-      for (const strike of strikePrices) {
-        for (const expiration of expirations) {
-          const optionParams = {
-            underlyingPrice,
-            strikePrice: strike,
-            timeToExpiration: expiration,
-            volatility: 0.2,
-            riskFreeRate: 0.01,
-            dividendYield: 0
-          };
+        for (const symbol of symbols) {
+          try {
+            const historicalData = await provider.getHistoricalData(symbol, 1);
+            const underlyingPrice = historicalData[0];
+            for (const strike of optionParamsConfig.strikePrices) {
+              for (const expiration of optionParamsConfig.expirations) {
+                const optionParams = {
+                  underlyingPrice,
+                  strikePrice: strike,
+                  timeToExpiration: expiration,
+                  volatility: optionParamsConfig.volatility,
+                  riskFreeRate: optionParamsConfig.riskFreeRate,
+                  dividendYield: optionParamsConfig.dividendYield
+                };
 
-          const pricingResult = await providers[0].calculatePrice(optionParams);
-          options.push(pricingResult);
+                const pricingResult = await provider.calculatePrice(optionParams);
+                options.push(pricingResult);
+              }
+            }
+          } catch (error) {
+            console.error(`Error processing symbol ${symbol} with provider ${provider.name}:`, error);
+          }
         }
+      } catch (error) {
+        console.error(`Error fetching data from provider ${provider.name}:`, error);
       }
     }
 
